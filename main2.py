@@ -94,11 +94,9 @@ if __name__ == '__main__':
 
     program2 = cl.Program(context, """
         #define size_n {size_n}
-        #define size_v {size_v}
         #define cluster_size {size_c}
-        __kernel void compute_shilluetes(
+        __kernel void compute_silhouettes(
         __global float *matrix,
-        __global float data[][size_v],
         __global int *clusters,
         __global float *data_out
         )
@@ -106,45 +104,69 @@ if __name__ == '__main__':
           int i = 0;
           int gid = get_global_id(0);
           int row = gid * size_n;
-          // Determine to which cluster data belongs
           int cluster_id;
-          int position = 0;
+          int cluster_offset = 0;
 
+          // Determine to which cluster data belongs
           for(;i<cluster_size; i++){
-            if(gid < position + clusters[i]){
+            if(gid < cluster_offset + clusters[i]){
               cluster_id = i;
               break;
             } else {
-              position += clusters[i];
+              cluster_offset += clusters[i];
             }
           }
-          // Now we have count inner cluster
+          // Now we have count cluster means
+          /*****
           i = 0;
           float a_sum = 0.0;
-          int offset = row + position;
+          int offset = row + cluster_offset;
           for(; i < clusters[cluster_id]; i++){
             a_sum += matrix[offset + i];
           }
           float a_mean = (a_sum/size_n);
+          **/
 
-          /*
+
+          // Silhouette needed means
+          float inner_cluster_mean = 0;
+          float nearest_mean = -1;
+
+          // loop dependencies - reset and reuse some variables
           i=0;
-          float lowest_mean;
-          int cluster_offset = 0;
+          cluster_offset = 0;
+          float cluster_sum = 0;
+          float cluster_mean = 0;
+
+
+          // loop counting all cluster mean distances
           for(; i<cluster_size; i++){
-            // count sum of distances for i cluster
-            float inner_sum = 0.0;
-            for(int j; j < clusters[i]; i++){
-              // TODO
+            // loop summing cluster member distances
+            for(int j=0; j < clusters[i]; j++){
+              cluster_sum += matrix[row + cluster_offset + j];
             }
+            // counting our mean for particular cluster
+            cluster_mean = cluster_sum/size_n;
+            cluster_sum = 0;
+            // If processed cluster is our cluster we save it
+            if(i == cluster_id){
+              inner_cluster_mean = cluster_mean;
+            } else {
+            // Else we just check if processed cluster has lower mean (is closer)
+              if(nearest_mean == -1 || nearest_mean > cluster_mean){
+                nearest_mean = cluster_mean;
+              }
+            }
+            // Always update offset
+            cluster_offset += clusters[i];
           }
-          */
+
 
           // Output
-          data_out[gid] = a_mean;
+          data_out[gid] = (nearest_mean - inner_cluster_mean)/fmax(nearest_mean, inner_cluster_mean);
+          //data_out[gid] = nearest_mean;
         }
         """.replace('{size_n}', str(data_len))
-                          .replace('{size_v}', str(len(allData[0])))
                           .replace('{size_c}', str(len(clusters)))
                           ).build()
 
@@ -152,7 +174,7 @@ if __name__ == '__main__':
     cluster_info_buf = cl.Buffer(context, mem_flags.READ_ONLY | mem_flags.COPY_HOST_PTR, hostbuf=clusterInfoBuff)
     out_data_buf = cl.Buffer(context, mem_flags.WRITE_ONLY, size=out_data.nbytes)
 
-    program2.compute_shilluetes(queue, out_data.shape, (1,), matrix_buf_2, data_buf, cluster_info_buf, out_data_buf)
+    program2.compute_silhouettes(queue, out_data.shape, (1,), matrix_buf_2, cluster_info_buf, out_data_buf)
 
     cl.enqueue_read_buffer(queue, out_data_buf, out_data).wait()
 

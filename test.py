@@ -31,19 +31,61 @@ if __name__ == '__main__':
             matrix[a_index][b_index] = math.sqrt(inner_sum)
 
     # count inner cluster mean distance
-    inner_clusters = []
+    # inner_means = []
+    # for i in range_data_len:
+    #     offset = 0
+    #     c_len = None
+    #     for cluster in clusters:
+    #         c_len = len(cluster)
+    #         if i < (offset + c_len):
+    #             break
+    #         offset += c_len
+    #
+    #     inner_sum = 0.0
+    #     for j in range(c_len):
+    #         inner_sum += matrix[i][offset + j]
+    #     inner_means.append(inner_sum/data_len)
+    #
+    # print inner_means
+    # exit()
+
+
+    # find all means
+    inner_means = []
+    other_means = []
     for i in range_data_len:
         offset = 0
+        found = False
         c_len = None
+        nearest_mean = -1
         for cluster in clusters:
             c_len = len(cluster)
-            if i < (offset + c_len):
-                break
+            inner_sum = 0.0
+            for j in range(c_len):
+                inner_sum += matrix[i][offset + j]
+
+            cluster_mean = inner_sum / data_len
+            if not found and i < (offset + c_len):
+                found = True
+                inner_means.append(inner_sum/data_len)
+            else:
+                if nearest_mean == -1 or nearest_mean > cluster_mean:
+                    nearest_mean = cluster_mean
+
             offset += c_len
+        # attach nearest mean to other means
+        other_means.append(nearest_mean)
 
-        inner_sum = 0.0
-        for j in range(c_len):
-            inner_sum += matrix[i][offset + j]
-        inner_clusters.append(inner_sum/data_len)
+    # print other_means
+    # exit()
 
-    print inner_clusters
+    # compute Silhouette
+    silhouette_data = []
+    for i in range_data_len:
+        loop_silhouette = (other_means[i] - inner_means[i]) / max(other_means[i], inner_means[i])
+        silhouette_data.append(loop_silhouette)
+
+    print silhouette_data
+
+
+
