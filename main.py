@@ -4,7 +4,7 @@ import numpy as np
 import math
 import time
 
-FILE_PATH = './data/stoneFlakes_clusters.json'
+FILE_PATH = './data/data.json'
 
 if __name__ == '__main__':
     # matrix_dot_vector = np.zeros(4, np.float32)
@@ -27,11 +27,44 @@ if __name__ == '__main__':
     matrix = np.zeros(data_len**2, np.float32)
     matrix2 = np.zeros((data_len, data_len), np.float32)
 
+    print '\n~~~~~~ Silhouette algorithm ~~~~~~\n'
+    #choose platform
+    platforms = cl.get_platforms()
+    print 'Available platforms:'
+    for p in platforms:
+        print p
+
+    try:
+        platform_choose = int(raw_input("\nPlease choose platform (0 - first, 1 - second): "))
+        # print platform_choose
+    except ValueError:
+        print 'Input is not a number'
+
     # Get platform - 0 is default which does not have any devices
-    platform = cl.get_platforms()[1]
-    # print 'OpenCL v.: {0}'.format(platform.version)
+    platform = cl.get_platforms()[platform_choose]
+
+    print '---------------------------------------------------------------------------------'
+
+    print 'Available devices:'
+    devices = platform.get_devices()
+    for d in devices:
+        print d
+
+    try:
+        device_choose = int(raw_input("Please choose device: "))
+        # print device_choose
+    except ValueError:
+        print 'Input is not a number'
+
+    # print 'OpenCL v.: {0}'.format(PYOPENCL_COMPILER_OUTPUTplatform.version)
     # get device - there is only one - Intel processor
-    device = platform.get_devices()[0]
+    device = platform.get_devices()[device_choose]
+
+    print '---------------------------------------------------------------------------------'
+    print 'Computing ..'
+
+    # print device.extensions
+    # exit()
     # print some info
     # utils.print_device_info(device)
     # create context
@@ -50,7 +83,8 @@ if __name__ == '__main__':
           int gid = get_global_id(0);
           int a_index = (int)(gid/size_n);
           int b_index = (int)(gid - (size_n * a_index));
-          double sum = 0.0;
+          int c;
+          float sum = 0;
 
           for(int i=0; i < size_v; i++){
             sum += pown(data[b_index][i] - data[a_index][i], 2);

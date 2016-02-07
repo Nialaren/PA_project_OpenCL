@@ -7,6 +7,11 @@ def load_from_file(path):
     fd.close()
     return data
 
+def load_from_txt(path):
+    with open(path) as f:
+        data = f.readlines()
+    file.close()
+    return data
 
 def print_device_info(device):
     print 'Name: {0}'.format(device.name)
