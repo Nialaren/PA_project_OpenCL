@@ -64,10 +64,11 @@ if __name__ == '__main__':
             for j in range(c_len):
                 inner_sum += matrix[i][offset + j]
 
-            cluster_mean = inner_sum / data_len
+            cluster_mean = inner_sum / c_len
             if not found and i < (offset + c_len):
                 found = True
-                inner_means.append(inner_sum/data_len)
+                inner_means.append(cluster_mean)
+                # inner_means.append(offset)
             else:
                 if nearest_mean == -1 or nearest_mean > cluster_mean:
                     nearest_mean = cluster_mean
@@ -76,7 +77,7 @@ if __name__ == '__main__':
         # attach nearest mean to other means
         other_means.append(nearest_mean)
 
-    # print other_means
+    # print inner_means
     # exit()
 
     # compute Silhouette
@@ -85,7 +86,10 @@ if __name__ == '__main__':
         loop_silhouette = (other_means[i] - inner_means[i]) / max(other_means[i], inner_means[i])
         silhouette_data.append(loop_silhouette)
 
-    print silhouette_data
+    # print silhouette_data
+
+    print np.array(silhouette_data).sum()/data_len
+
 
 
 

@@ -1,10 +1,12 @@
 import pyopencl as cl
+import pyopencl.array as cl_array
 import utils
 import numpy as np
 import math
 import time
 
 FILE_PATH = './data/stoneFlakes_clusters.json'
+# FILE_PATH = './data/test_data.json'
 
 if __name__ == '__main__':
     # matrix_dot_vector = np.zeros(4, np.float32)
@@ -28,6 +30,8 @@ if __name__ == '__main__':
 
     data = np.array(allData, np.float32)
     data_len = len(allData)
+    # print data_len
+    # exit()
     clusterInfoBuff = np.array(clusterInfo, np.int32)
 
     # print clusterInfoBuff[0]
@@ -82,6 +86,7 @@ if __name__ == '__main__':
 
     # Associate the arguments to the kernel with kernel object.
     # Deploy the kernel for device execution.
+
     program.compute_distance_matrix(queue, matrix.shape, (1,), matrix_buf, data_buf)
     # Move the kernels output data to host memory.
     cl.enqueue_read_buffer(queue, matrix_buf, matrix).wait()
@@ -116,17 +121,6 @@ if __name__ == '__main__':
               cluster_offset += clusters[i];
             }
           }
-          // Now we have count cluster means
-          /*****
-          i = 0;
-          float a_sum = 0.0;
-          int offset = row + cluster_offset;
-          for(; i < clusters[cluster_id]; i++){
-            a_sum += matrix[offset + i];
-          }
-          float a_mean = (a_sum/size_n);
-          **/
-
 
           // Silhouette needed means
           float inner_cluster_mean = 0;
@@ -146,7 +140,7 @@ if __name__ == '__main__':
               cluster_sum += matrix[row + cluster_offset + j];
             }
             // counting our mean for particular cluster
-            cluster_mean = cluster_sum/size_n;
+            cluster_mean = cluster_sum/clusters[i];
             cluster_sum = 0;
             // If processed cluster is our cluster we save it
             if(i == cluster_id){
@@ -163,8 +157,8 @@ if __name__ == '__main__':
 
 
           // Output
-          data_out[gid] = (nearest_mean - inner_cluster_mean)/fmax(nearest_mean, inner_cluster_mean);
-          //data_out[gid] = nearest_mean;
+          //data_out[gid] = (nearest_mean - inner_cluster_mean)/fmax(nearest_mean, inner_cluster_mean);
+          data_out[gid] = inner_cluster_mean;
         }
         """.replace('{size_n}', str(data_len))
                           .replace('{size_c}', str(len(clusters)))
@@ -179,5 +173,21 @@ if __name__ == '__main__':
     cl.enqueue_read_buffer(queue, out_data_buf, out_data).wait()
 
     print out_data
+
+    # x_gpu = cl_array.to_device(queue, out_data.astype(np.float32))
+    #
+    # from pyopencl.reduction import ReductionKernel
+    # reduction_kernel = ReductionKernel(
+    #         context,
+    #         dtype_out=np.float32,
+    #         neutral="0",
+    #         map_expr="x[i]",
+    #         reduce_expr="a+b",
+    #         arguments="__global float *x",
+    #         name="reduction_kernel")
+    #
+    # result = reduction_kernel(x_gpu).get()
+    #
+    # print result
 
 
