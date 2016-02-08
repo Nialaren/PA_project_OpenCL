@@ -96,8 +96,21 @@ def euclidean_distance(a, b, numbers, strings, w):
 
     return distance
 
+
+def clean_data():
+        file = open("..\data\data.json", "r")
+        filedata = file.read()
+        file.close()
+
+        newdata = filedata.replace(",]", "]")
+
+        file = open("..\data\data_clean.json", "w")
+        file.write(newdata)
+        file.close()
+
+
 def data_to_json(clusters):
-    text_file = open("..\data\data.txt", "w")
+    text_file = open("..\data\data.json", "w")
 
     num = 1
     text_file.write('{"clusters":[')
@@ -105,13 +118,16 @@ def data_to_json(clusters):
         text_file.write('[')
         num += 1
         for i in range(len(child.children)):
-            text_file.write('{0},'.format(child.children[i]))
-        text_file.write(']')
+            text_file.write("[{0}],".format(",".join(map(repr, child.children[i]))))
+        text_file.write('],')
 
     text_file.write(']}')
+    text_file.close()
+
+    clean_data()
 
     print "Data zapisane"
-    # text_file.close()
+
 
 def data_to_output(words, data, clusters, num_clusters, num_iterations, numbers, strings):
     text_file = open("output.arff", "w")

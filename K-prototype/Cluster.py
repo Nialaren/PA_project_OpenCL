@@ -7,7 +7,7 @@ class Cluster(object):
         self.numbers = numbers
         self.strings = strings
 
-        self.children =[]
+        self.children = []
 
     def add_child(self, child):
         self.children.append(child)

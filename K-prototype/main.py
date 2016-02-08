@@ -30,6 +30,7 @@ with open(fname) as f:
                     point.append(str(line[i]))
 
             data.append(point)
+
 with open(fname) as f:
     head = f.readline()
     words = head.split(",")

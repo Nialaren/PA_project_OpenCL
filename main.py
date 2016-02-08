@@ -4,7 +4,7 @@ import numpy as np
 import math
 import time
 
-FILE_PATH = './data/data.json'
+FILE_PATH = './data/data_clean.json'
 
 if __name__ == '__main__':
     # matrix_dot_vector = np.zeros(4, np.float32)
