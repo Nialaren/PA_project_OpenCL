@@ -5,8 +5,8 @@ import numpy as np
 import math
 import time
 
-FILE_PATH = './data/stoneFlakes_clusters.json'
-# FILE_PATH = './data/data_clean.json'
+# FILE_PATH = './data/stoneFlakes_clusters.json'
+FILE_PATH = './data/data_clean.json'
 
 COUNT_RUN = 5
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     device = None
     platform = None
-    skip = True
+    skip = False
 
     if skip is False:
         print '\n~~~~~~ Silhouette algorithm ~~~~~~\n'
@@ -198,23 +198,24 @@ if __name__ == '__main__':
 
         cl.enqueue_read_buffer(queue, out_data_buf, out_data).wait()
 
-        print out_data
+        # print out_data
 
         # ###### PART 3. REDUCE
-        x_gpu = cl_array.to_device(queue, out_data.astype(np.float32))
-
-        from pyopencl.reduction import ReductionKernel
-        reduction_kernel = ReductionKernel(
-                context,
-                dtype_out=np.float32,
-                neutral="0",
-                map_expr="x[i]",
-                reduce_expr="a+b",
-                arguments="__global float *x",
-                name="reduction_kernel")
-
-        result = reduction_kernel(x_gpu).get()
-
+        # x_gpu = cl_array.to_device(queue, out_data.astype(np.float32))
+        #
+        # from pyopencl.reduction import ReductionKernel
+        # reduction_kernel = ReductionKernel(
+        #         context,
+        #         dtype_out=np.float32,
+        #         neutral="0",
+        #         map_expr="x[i]",
+        #         reduce_expr="a+b",
+        #         arguments="__global float *x",
+        #         preamble="#pragma OPENCL EXTENSION cl_khr_fp64: enable",
+        #         name="reduction_kernel")
+        #
+        # result = reduction_kernel(x_gpu).get()
+        result = out_data.sum()
         run_time = time.time() - start_time
         sum_time += run_time
 
@@ -222,4 +223,3 @@ if __name__ == '__main__':
         print 'result: {0}'.format(result / data_len)
 
     print 'Average time: {0} seconds'. format(sum_time/COUNT_RUN)
-

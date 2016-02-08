@@ -5,8 +5,8 @@ import numpy as np
 import math
 import time
 
-FILE_PATH = './data/stoneFlakes_clusters.json'
-# FILE_PATH = './data/data_clean.json'
+# FILE_PATH = './data/stoneFlakes_clusters.json'
+FILE_PATH = './data/data_clean.json'
 COUNT_RUN = 5
 
 mem_flags = cl.mem_flags
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     device = None
     platform = None
-    skip = True
+    skip = False
 
     if skip is False:
         print '\n~~~~~~ Silhouette algorithm ~~~~~~\n'
