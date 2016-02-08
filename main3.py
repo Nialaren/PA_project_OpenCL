@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
         cl.enqueue_read_buffer(queue, out_data_buf, out_data).wait()
 
-        print out_data
+        # print out_data
 
         # print out_data
         x_gpu = cl_array.to_device(queue, out_data.astype(np.float32))
