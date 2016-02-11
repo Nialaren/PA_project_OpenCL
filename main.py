@@ -7,10 +7,6 @@ FILE_PATH = './data/data_clean.json'
 COUNT_RUN = 1
 
 if __name__ == '__main__':
-    # matrix_dot_vector = np.zeros(4, np.float32)
-    # print matrix_dot_vector.shape
-    # exit()
-    # Test Data preparation
     clusters = utils.load_from_file(FILE_PATH)['clusters']
     allData = []
     countData = 0

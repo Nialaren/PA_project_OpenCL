@@ -5,20 +5,13 @@ import numpy as np
 import math
 import time
 
-# FILE_PATH = './data/stoneFlakes_clusters.json'
 FILE_PATH = './data/data_clean.json'
 COUNT_RUN = 5
 
 mem_flags = cl.mem_flags
 
 if __name__ == '__main__':
-    # matrix_dot_vector = np.zeros(4, np.float32)
-    # print matrix_dot_vector.shape
-    # exit()
-    # Test Data preparation
     clusters = utils.load_from_file(FILE_PATH)['clusters']
-
-
     allData = []
     clusterInfo = []
     countData = 0
@@ -34,61 +27,49 @@ if __name__ == '__main__':
     vec_size = len(data[0])
     clusterInfoBuff = np.array(clusterInfo, np.int32)
 
-    # print clusterInfoBuff[0]
-    # exit()
-
     # create empty matrix
     matrix = np.zeros(data_len**2, np.float32)
 
     device = None
     platform = None
-    skip = False
 
-    if skip is False:
-        print '\n~~~~~~ Silhouette algorithm ~~~~~~\n'
-        # choose platform
-        platforms = cl.get_platforms()
-        print 'Available platforms:'
-        for p in platforms:
-            print p
+    print '\n~~~~~~ Silhouette algorithm ~~~~~~\n'
+    # choose platform
+    platforms = cl.get_platforms()
+    print 'Available platforms:'
+    for p in platforms:
+        print p
 
-        try:
-            platform_choose = int(raw_input("\nPlease choose platform (0 - first, 1 - second): "))
-            # print platform_choose
-        except ValueError:
-            print 'Input is not a number'
+    platform_choose = 0
+    try:
+        platform_choose = int(raw_input("\nPlease choose platform (0 - first, 1 - second): "))
+        # print platform_choose
+    except ValueError:
+        print 'Input is not a number'
 
-        # Get platform - 0 is default which does not have any devices
-        platform = cl.get_platforms()[platform_choose]
+    # Get platform - 0 is default which does not have any devices
+    platform = cl.get_platforms()[platform_choose]
 
-        print '---------------------------------------------------------------------------------'
+    print '---------------------------------------------------------------------------------'
 
-        print 'Available devices:'
-        devices = platform.get_devices()
-        for d in devices:
-            print d
+    print 'Available devices:'
+    devices = platform.get_devices()
+    for d in devices:
+        print d
 
-        try:
-            device_choose = int(raw_input("Please choose device: "))
-            # print device_choose
-        except ValueError:
-            print 'Input is not a number'
+    device_choose = 0
+    try:
+        device_choose = int(raw_input("Please choose device: "))
+        # print device_choose
+    except ValueError:
+        print 'Input is not a number'
 
-        # print 'OpenCL v.: {0}'.format(PYOPENCL_COMPILER_OUTPUTplatform.version)
-        # get device - there is only one - Intel processor
-        device = platform.get_devices()[device_choose]
+    # print 'OpenCL v.: {0}'.format(PYOPENCL_COMPILER_OUTPUTplatform.version)
+    # get device - there is only one - Intel processor
+    device = platform.get_devices()[device_choose]
 
-        print '---------------------------------------------------------------------------------'
-        print 'Computing ..'
-
-    else:
-        # Get platform - 0 is default which does not have any devices
-        platform = cl.get_platforms()[1]
-        # print 'OpenCL v.: {0}'.format(platform.version)
-        # get device - there is only one - Intel processor
-        device = platform.get_devices()[0]
-        # print some info
-        # utils.print_device_info(device)
+    print '---------------------------------------------------------------------------------'
+    print 'Computing ..'
 
     # create context
     context = cl.Context([device])
@@ -120,7 +101,7 @@ if __name__ == '__main__':
 
         out_data = np.zeros(data_len, np.float32)
 
-        program2 = cl.Program(context, open('./programs/program2.cl').read().replace('{size_n}', str(data_len))
+        program2 = cl.Program(context, open('./programs/silhouette_2.cl').read().replace('{size_n}', str(data_len))
                               ).build()
 
         matrix_buf_2 = cl.Buffer(context, mem_flags.READ_ONLY | mem_flags.COPY_HOST_PTR, hostbuf=matrix)
