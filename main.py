@@ -6,6 +6,8 @@ import time
 FILE_PATH = './data/data_clean.json'
 COUNT_RUN = 1
 
+print 'Hello guys'
+
 if __name__ == '__main__':
     clusters = utils.load_from_file(FILE_PATH)['clusters']
     allData = []
